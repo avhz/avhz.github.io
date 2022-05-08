@@ -1,5 +1,6 @@
 ---
 name: "avhz"
+output_dir: "docs"
 navbar:
   title: ""
   left:
@@ -11,7 +12,7 @@ output:
   html_document:
     theme: cosmo
     highlight: textmate
-    include:
-      after_body: footer.html
-    css: styles.css
+    # include:
+    #   after_body: footer.html
+    # css: styles.css
 ---

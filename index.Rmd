@@ -2,7 +2,9 @@
 title: "$f(\\alpha\\zeta)$"
 ---
 
+
 $$y = \sin(\alpha \zeta) \qquad \alpha \in \{0,0.1,0.2,...,3\}$$
+
 
 ```{r, echo = FALSE, fig.align='center', message = FALSE, warning = FALSE}
 library(tidyverse)
