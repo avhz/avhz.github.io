@@ -1,0 +1,31 @@
+---
+title: "$f(\\alpha\\zeta)$"
+---
+
+$$y = \sin(\alpha \zeta) \qquad \alpha \in \{0,0.1,0.2,...,3\}$$
+
+```{r, echo = FALSE, fig.align='center', message = FALSE, warning = FALSE}
+library(tidyverse)
+
+cool_function   <- function(x, alpha) return(sin(alpha*x))
+xs              <- seq(0, pi*1.5, 0.005)
+ys              <- cool_function(xs, 1)
+results         <- tibble(xs, ys, alpha = "1")
+
+for(alpha in seq(0, 3, 0.1)){
+  results <- results %>% 
+    bind_rows(data_frame(xs, 
+                         ys = cool_function(xs, alpha),
+                         alpha = as.character(alpha)))
+}
+
+ggplot(results, aes(x = xs, y = ys, color = alpha)) + 
+  geom_line() + 
+  theme_bw() + 
+  theme(legend.position = "none") +
+    theme(axis.text.x = element_blank(), #remove x axis labels
+        axis.ticks.x = element_blank(), #remove x axis ticks
+        axis.text.y = element_blank(),  #remove y axis labels
+        axis.ticks.y = element_blank()  #remove y axis ticks
+        )
+```
