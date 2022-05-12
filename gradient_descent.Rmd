@@ -2,8 +2,6 @@
 title: "Gradient Descent"
 ---
 
-### Thank you to the lovely Luna Lisa Rigby $\heartsuit$.
-
 # The Steepest Descent Method.
 
 We want to implement an algorithm for solving uncostrained optimisation problems of the form:
