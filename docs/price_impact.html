@@ -11,7 +11,7 @@
 
 
 
-<title>About</title>
+<title>Price Impact</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -309,12 +309,44 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">About</h1>
+<h1 class="title toc-ignore">Price Impact</h1>
 
 </div>
 
 
-<p>More about this website.</p>
+<p>The bid-ask spread compensates for the price impact of buy and sell
+trades, which generally cause the price to rise and fall,
+respectively.</p>
+<p>Denote the midpoint price as:</p>
+<p><span class="math display">\[
+M := \frac{\text{ask}+\text{bid}}{2}
+\]</span></p>
+<p>The expected future value of <span class="math inline">\(M\)</span>
+is:</p>
+<p><span class="math display">\[
+\mathbb{E}[M_{\infty}]
+= \mathbb{E}\left[ \frac{\text{ask}+\text{bid}}{2} \right]
+\]</span></p>
+<p>In most markets, since one can assume that at least a small volume of
+trades are informed, the arrival of a buy trade (sell trade) should
+cause the expected value of <span class="math inline">\(M\)</span> to be
+greater than (less than) its current value.</p>
+<p>Mathematically, let the sign of the trade be:</p>
+<p><span class="math display">\[
+\delta =
+\begin{cases}
++1 &amp; \text{for a buy trade} \\
+-1 &amp; \text{for a sell trade} \\
+\end{cases}
+\]</span></p>
+<p>We then have the expected long-term impact of a trade:</p>
+<p><span class="math display">\[
+\mathcal{R}_{\infty} := \mathbb{E}[\delta\cdot(M_{\infty} - M)]
+\]</span></p>
+<p>Since the arrival of a buy (sell) trade will cause <span
+class="math inline">\(M\)</span> to increase (decrease), we can see from
+the definition of <span class="math inline">\(\delta\)</span> that <span
+class="math inline">\(\mathcal{R}_{\infty}&gt;0\)</span>.</p>
 
 Copyright &copy; 1995. All rights reserved.
 

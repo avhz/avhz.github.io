@@ -2,17 +2,44 @@
 name: "avhz"
 output_dir: "docs"
 navbar:
-  title: ""
+  title: <p><span class="math inline">\(f(\alpha\zeta)\)</span></p>
   left:
     - text: "Home"
       href: index.html
+    - text: "Programming"
+      href: programming.html
+      menu:
+      - text: "Rcpp"
+        href: rcpp_index.html
+      - text: "Gradient Descent"
+        href: gradient_descent.html
+      - text: "Monte-Carlo Integration"
+        href: MC_integration.html
+    - text: "Mathematics"
+      href: mathematics.html
+      menu: 
+      - text: "Brownian Motion"
+        href: brownian_motion.html
+      - text: "Maximum Likelihood Estimation"
+        href: MLE.html
+    - text: "Trading"
+      href: trading.html
+      menu: 
+      - text: "Price Impact"
+        href: price_impact.html
     - text: "About"
       href: about.html
 output:
   html_document:
     theme: cosmo
     highlight: textmate
-    # include:
-    #   after_body: footer.html
-    # css: styles.css
+    include:
+      after_body: footer.html
+    css: styles.css
 ---
+
+# THEME OPTIONS: ---------------------------------------------------------------
+# “default”, “bootstrap”, “cerulean”, “cosmo”, “darkly”, 
+# “flatly”, “journal”, “lumen”, “paper”, “readable”, 
+# “sandstone”, “simplex”, “spacelab”, “united”, “yeti”
+# ------------------------------------------------------------------------------

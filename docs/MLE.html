@@ -11,7 +11,7 @@
 
 
 
-<title>About</title>
+<title>Maximum Likelihood Estimation</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -309,12 +309,168 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">About</h1>
+<h1 class="title toc-ignore">Maximum Likelihood Estimation</h1>
 
 </div>
 
 
-<p>More about this website.</p>
+<div id="generalised-extreme-value-distribution-for-river-flow-data"
+class="section level1">
+<h1>Generalised Extreme Value Distribution for River Flow Data</h1>
+<p>We have a small dataset obtained from a 1984 consulting session on
+the maximum flow of rivers measured from one station (<span
+class="math inline">\(n=35\)</span> yearly maximums).</p>
+<p>We want to find the MLEs of the paramaters of the location-scale
+extreme value distribution model, and use a QQ-Plot to check the
+goodness-of-fit.</p>
+<div id="the-maximum-likelihood-estimators" class="section level2">
+<h2>The Maximum Likelihood Estimators</h2>
+<p>We are given the Generalised Extreme-Value Distribution, for the
+special case where shape parameter <span class="math inline">\(\xi =
+0\)</span>, which implies exponential tail decay. The density is:</p>
+<p><span class="math display">\[
+f(x|\mu,\sigma)
+= \frac{1}{\sigma}f_0\left(\frac{x-\mu}{\sigma}\right)
+= \frac{1}{\sigma}\exp\left[\frac{\mu-x}{\sigma} -
+\exp\left(\frac{\mu-x}{\sigma}\right)\right]
+\]</span></p>
+<p><span class="math display">\[
+f_0(x) = e^{-x}e^{-e^{-x}}, \qquad \mu \in \mathbb{R}, \qquad \sigma
+&gt; 0
+\]</span></p>
+<p>The associated likelihood and log-likelihood functions are:</p>
+<p><span class="math display">\[
+\mathcal{L}(\mu,\sigma|x)
+= \prod_{i=1}^n \frac{1}{\sigma}f_0\left(\frac{x_i-\mu}{\sigma}\right)
+= \prod_{i=1}^n \frac{1}{\sigma}\exp\left[\frac{\mu-x_i}{\sigma} -
+\exp\left(\frac{\mu-x_i}{\sigma}\right)\right]
+= \frac{1}{\sigma^n}\prod_{i=1}^n \exp\left[\frac{\mu-x_i}{\sigma} -
+\exp\left(\frac{\mu-x_i}{\sigma}\right)\right]
+\]</span></p>
+<p><span class="math display">\[
+\ln[\mathcal{L}(\mu,\sigma|x)]
+= -n\ln(\sigma) + \sum_{i=1}^n \left[\frac{\mu-x_i}{\sigma} -
+\exp\left(\frac{\mu-x_i}{\sigma}\right)\right]
+= -n\ln(\sigma) + \sum_{i=1}^n \left[\frac{\mu-x_i}{\sigma}\right] -
+\sum_{i=1}^n \exp\left(\frac{\mu-x_i}{\sigma}\right)
+\]</span></p>
+<p>This function has no closed-form solution that can be derived
+analytically, so we need to use use <code>R</code> to estimate the
+parameters numerically.</p>
+<p>Note that we return <span
+class="math inline">\(-\ln[\mathcal{L}(\mu,\sigma|x)]\)</span> since
+<code>R</code>’s <code>optim</code> function default method is
+minimising, and we are after the maximum.</p>
+<pre class="r"><code># SET WORKING DIRECTORY TO LOCATION THIS FILE AND RIVERS.TXT ARE SAVED IN:
+# setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+setwd(getwd())
+
+# DECLARE AND DEFINE GEVD DENSITY AND LOG-LIKELIHOOD FUNCTIONS:
+GEVD_FN &lt;- function(parameters, x) {
+    mu      &lt;- parameters[1]
+    sigma   &lt;- parameters[2]
+    FN      &lt;- (1/sigma) * exp((mu-x)/sigma - exp((mu-x)/sigma))
+    return( FN )
+}
+
+GEVD_LL &lt;- function(parameters, x) {
+    n       &lt;- length(x)
+    mu      &lt;- parameters[1]
+    sigma   &lt;- parameters[2]
+    LL      &lt;- -n*log(sigma) + sum((mu-x)/sigma) - sum(exp((mu-x)/sigma))
+    return( - LL )
+}
+
+# READ IN RIVER FLOW DATA FROM TEXT FILE:
+RIVERS &lt;- read.delim(&quot;rivers.txt&quot;, header = FALSE)[,1]
+mean(RIVERS)</code></pre>
+<pre><code>## [1] 5493.714</code></pre>
+<pre class="r"><code>sd(RIVERS)</code></pre>
+<pre><code>## [1] 2454.108</code></pre>
+<pre class="r"><code># OPTIMISE LOG-LIKELIHOOD FUNCTION FOR THE PARAMETERS:
+optim(par = c(mean(RIVERS), sd(RIVERS)), 
+      fn = GEVD_LL, 
+      x = RIVERS, 
+      method = &quot;BFGS&quot;)</code></pre>
+<pre><code>## $par
+## [1] 4501.432 1933.551
+## 
+## $value
+## [1] 319.4077
+## 
+## $counts
+## function gradient 
+##       13       11 
+## 
+## $convergence
+## [1] 0
+## 
+## $message
+## NULL</code></pre>
+<pre class="r"><code># GET PARAMETERS:
+PARS &lt;- optim(par = c(mean(RIVERS), sd(RIVERS)), 
+              fn = GEVD_LL, 
+              x = RIVERS, 
+              method = &quot;BFGS&quot;)$par
+
+# PLOT THE RIVER FLOW DENSITY:
+plot(density(RIVERS), 
+     main = &quot;Yearly Maximum River Flow Density&quot;, 
+     xlab = &quot;Yearly Max Flow of Rivers&quot;,
+     col = &quot;blue&quot;)</code></pre>
+<p><img src="MLE_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+</div>
+<div id="qq-plot-to-graphically-assess-goodness-of-fit"
+class="section level2">
+<h2>QQ-Plot to Graphically Assess Goodness-of-Fit</h2>
+<p>We need the GEVD distribution function, obtained by integrating the
+density:</p>
+<p><span class="math display">\[
+F_X(x|\mu,\sigma)
+= \int_{-\infty}^x \frac{1}{\sigma}\exp\left[\frac{\mu-x}{\sigma} -
+\exp\left(\frac{\mu-x}{\sigma}\right)\right] dx
+= \exp\left[ - \exp\left( \frac{\mu-x}{\sigma} \right) \right]
+\]</span></p>
+<p>By inverting the CDF we obtain the quantile function, which we can
+use for our QQ-plot:</p>
+<p><span class="math display">\[
+Q(p|\mu,\sigma)
+= F_X^{-1}(x|\mu,\sigma)
+= \mu - \sigma \ln(-\ln(p))
+\qquad p \in (0,1)
+\]</span></p>
+<p>We can now implement the distribution and quantile functions in
+<code>R</code>, and obtain the QQ-plot:</p>
+<pre class="r"><code>GEVD_DF &lt;- function(parameters, x) {
+    mu      &lt;- parameters[1]
+    sigma   &lt;- parameters[2]
+    return( exp( - exp((mu-x)/sigma) ) )
+}
+
+GEVD_QF &lt;- function(parameters, p) {
+    mu      &lt;- parameters[1]
+    sigma   &lt;- parameters[2]
+    return( mu - sigma * log( - log(p) ) )
+}
+
+par(mfrow=c(1,2))
+curve(GEVD_DF(PARS, x), xlim = c(0, 12000), 
+      main = &quot;Distribution Function&quot;, 
+      col = &quot;blue&quot;, xlab = &quot;x&quot;, ylab = &quot;&quot;)
+curve(GEVD_QF(PARS, x), main = &quot;Quantile Function&quot;,
+      xlab = &quot;p&quot;, ylab = &quot;&quot;,
+      col = &quot;blue&quot;)</code></pre>
+<p><img src="MLE_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>par(mfrow = c(1,1))
+qqplot(GEVD_QF(PARS, seq(0, 1, 1/36))[2:36], RIVERS,
+       main = &quot;QQ-Plot to Check Goodness-of-Fit&quot;,
+       xlab = &quot;Estimated Quantiles&quot;,
+       ylab = &quot;River Flow Data Quantiles&quot;, 
+       col = &quot;blue&quot;)
+qqline(RIVERS, distribution = function(p) GEVD_QF(PARS, p), col = &quot;red&quot;)</code></pre>
+<p><img src="MLE_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+</div>
+</div>
 
 Copyright &copy; 1995. All rights reserved.
 
