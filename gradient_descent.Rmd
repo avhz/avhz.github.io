@@ -4,7 +4,7 @@ title: "Gradient Descent"
 
 # The Steepest Descent Method.
 
-We want to implement an algorithm for solving uncostrained optimisation problems of the form:
+We want to implement an algorithm for solving unconstrained optimisation problems of the form:
 
 $$
 \min_{x \in \mathbb{R}^n} f(x) \qquad f(x) \in \mathcal{C}^1
