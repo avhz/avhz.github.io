@@ -2,6 +2,7 @@
 name: "avhz"
 output_dir: "docs"
 navbar:
+#  title: <p><code>int main()</code></p>
   title: <p><span class="math inline">\(f(\alpha\zeta)\)</span></p>
   left:
     - text: "Home"
@@ -11,22 +12,22 @@ navbar:
       menu:
       - text: "Rcpp"
         href: rcpp_index.html
-      - text: "Gradient Descent"
-        href: gradient_descent.html
-      - text: "Monte-Carlo Integration"
-        href: MC_integration.html
+      # - text: "Gradient Descent"
+      #   href: gradient_descent.html
+      # - text: "Monte-Carlo Integration"
+      #   href: MC_integration.html
     - text: "Mathematics"
       href: mathematics.html
-      menu: 
-      - text: "Brownian Motion"
-        href: brownian_motion.html
-      - text: "Maximum Likelihood Estimation"
-        href: MLE.html
+      # menu: 
+      # - text: "Brownian Motion"
+      #   href: brownian_motion.html
+      # - text: "Maximum Likelihood Estimation"
+      #   href: MLE.html
     - text: "Trading"
       href: trading.html
-      menu: 
-      - text: "Price Impact"
-        href: price_impact.html
+      # menu: 
+      # - text: "Price Impact"
+      #   href: price_impact.html
     - text: "About"
       href: about.html
 output:

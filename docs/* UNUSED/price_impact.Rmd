@@ -1,0 +1,43 @@
+---
+title: "Price Impact"
+---
+
+The bid-ask spread compensates for the price impact of buy and sell trades, which generally cause the price to rise and fall, respectively. 
+
+Denote the midpoint price as:
+
+$$
+M := \frac{\text{ask}+\text{bid}}{2}
+$$
+
+The expected future value of $M$ is:
+
+$$
+\mathbb{E}[M_{\infty}] 
+= \mathbb{E}\left[ \frac{\text{ask}+\text{bid}}{2} \right]
+$$
+
+In most markets, since one can assume that at least a small volume of trades are informed, the arrival of a buy trade (sell trade) should cause the expected value of $M$ to be greater than (less than) its current value. 
+
+Mathematically, let the sign of the trade be:
+
+$$
+\delta = 
+\begin{cases}
++1 & \text{for a buy trade} \\
+-1 & \text{for a sell trade} \\
+\end{cases}
+$$
+
+We then have the expected long-term impact of a trade:
+
+$$
+\mathcal{R}_{\infty} := \mathbb{E}[\delta\cdot(M_{\infty} - M)]
+$$
+
+Since the arrival of a buy (sell) trade will cause $M$ to increase (decrease), we can see from the definition of $\delta$ that $\mathcal{R}_{\infty}>0$.
+
+
+
+
+

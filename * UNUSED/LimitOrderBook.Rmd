@@ -1,0 +1,27 @@
+---
+title: "Limit Order Book"
+---
+
+# Adding orders.
+
+```{r}
+addOrder <- function(
+        # Function arguments: --------------------------------------------------
+        Y,   # Matrix representation of X until previous timestep
+        p,   # Price of the order
+        t1,  # Type of order (1 = sell, 2 = buy)
+        t2   # Type of order (1 = limit, 2 = cancellation)
+        ) {
+    
+    
+}
+```
+
+
+
+
+
+
+
+
+
