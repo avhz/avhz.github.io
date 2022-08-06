@@ -1,0 +1,79 @@
+---
+title: "European Options"
+---
+
+# Monte Carlo simulation in `R`
+
+```{r}
+EuropeanOptionMonteCarlo <-function(
+        nSims = 1000000, 
+        S0, K, t, r, v) {
+   
+    # Geometric Brownian Motion simulations
+    ST = S0 * exp( (r - v*v / 2) * t + v * sqrt(t) * rnorm(nSims))
+    
+    # Put/Call payoffs:
+    payoffs_calls   <- exp( -r*t ) * pmax(ST - K, 0)
+    payoffs_puts    <- exp( -r*t ) * pmax(K - ST, 0)
+    
+    # Put/Call prices:
+    price_call <- mean(payoffs_calls)
+    price_put <- mean(payoffs_puts)
+    
+    # Standard errors:
+    std_error_call <- sd(payoffs_calls) / sqrt(nSims)
+    std_error_put <- sd(payoffs_puts) / sqrt(nSims)
+    
+    results <- list(
+        "Call Price" = price_call,
+        "Put Price" = price_put,
+        "Standard Error (Call)" = std_error_call,
+        "Standard Error (Put)" = std_error_put
+    )
+    
+    return( results )
+}
+```
+
+
+# Black-Scholes closed-form solution in `R`
+
+```{r}
+EuropeanOptionClosedForm <- function(
+        S0, K, r, v, t) {
+    
+    d1 <- (log(S0/K) + (r + v*v/2) * t) / (v * sqrt(t))
+    d2 <- d1 - v * sqrt(t)
+    
+    prices <- list(
+        "Call Price" = S0 * pnorm(d1) - K * exp( -r*t ) * pnorm(d2),
+        "Put Price" = -S0 * pnorm(-d1) + K * exp( -r*t ) * pnorm(-d2)
+    )
+    
+    return( prices )
+}
+```
+
+# Black-Scholes closed-form solution in `C++`
+
+```{Rcpp, file = "BlackScholes.cpp"}
+
+```
+
+
+```{r}
+Rcpp::sourceCpp(file = "BlackScholes.cpp")
+```
+
+
+# Comparison
+
+```{r}
+EuropeanOptionClosedForm(S0 = 100, K = 110,  r = 0.05, v = 0.2, t = 1)
+
+EuropeanOptionMonteCarlo(S0 = 100, K = 110, r = 0.05, v = 0.2, t = 1)
+
+BlackScholes_Cpp(S0 = 100, K = 110, t = 1, r = 0.05, v = 0.2)
+```
+
+

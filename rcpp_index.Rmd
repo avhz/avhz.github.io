@@ -1,7 +1,0 @@
----
-title: "Rcpp"
----
-
-This section contains all projects related to `Rcpp` and using `C++` in `R`. 
-
-

@@ -11,7 +11,7 @@
 
 
 
-<title>f(\alpha\zeta)</title>
+<title>Geometric Brownian Motion Simulation</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -276,16 +276,201 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore"><span
-class="math inline">\(f(\alpha\zeta)\)</span></h1>
+<h1 class="title toc-ignore">Geometric Brownian Motion Simulation</h1>
 
 </div>
 
 
+<div id="r-euler-maruyama-discretization" class="section level1">
+<h1><code>R</code> Euler-Maruyama discretization:</h1>
+<p>Since there is a closed-form solution (below) for the GBM stochastic
+differential equation, this scheme is not necessary, but a nice
+illustration nevertheless.</p>
+<p>For an Ito process, <span
+class="math inline">\(X=(X)_{t&gt;t_0}\)</span>, that satisfies the
+SDE:</p>
 <p><span class="math display">\[
-y = \sin(\alpha \zeta) \qquad \alpha \in \{0,0.1,0.2,...,3\}
+X_t = x + \int_{t_0}^t\mu(s,X_s)ds + \int_{t_0}^t\sigma(s,X_s)dW_s
 \]</span></p>
-<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><span class="math display">\[
+dX_t = \mu(t,X_t)dt + \sigma(t,X_t)dW_t
+\]</span></p>
+<p>The Euler-Maruyama discretisation can be implemented recursively
+as:</p>
+<p><span class="math display">\[
+X_{t_{n+1}} = X_{t_n} + \mu(t,X_{t_n})\Delta t +
+\sigma(t_n,X_{t_n})\epsilon_n
+\qquad
+\epsilon \sim N(0,\Delta t)
+\]</span></p>
+<pre class="r"><code>GBM_Euler &lt;- function(S0 = 1, r, v, t, N = 365) {
+    dt      &lt;- t / N
+    time    &lt;- seq(from = 0, to = t, by = dt)
+    
+    Z       &lt;- rnorm(n = N, mean = 0, sd = 1)
+    dW      &lt;- sqrt(dt) * Z
+    W       &lt;- c(0, cumsum(dW))
+    St      &lt;- c(S0, numeric(N))
+
+    for (i in 2:length(St)) {
+        St[i] &lt;- St[i-1] + r * St[i-1] * dt + v * St[i-1] * dW[i-1]
+    }
+    
+    return( St )
+}</code></pre>
+</div>
+<div id="c-closed-form-simulation" class="section level1">
+<h1><code>C++</code> Closed-Form Simulation:</h1>
+<pre class="cpp"><code>
+// Header files and namespaces -------------------------------------------------
+
+#include &lt;Rcpp.h&gt;
+#include &lt;math.h&gt;
+#include &lt;numeric&gt;
+#include &lt;random&gt;
+#include &lt;vector&gt;
+#include &lt;functional&gt; 
+
+using namespace Rcpp;
+
+// Non-exported functions ------------------------------------------------------
+
+std::vector&lt;double&gt; linspace(double a, double b, int num) {
+    std::vector&lt;double&gt; v(num);
+    for (int i = 0; i &lt; num; i++) { v[i] = a + i * ( (b - a) / num ); }
+    return v;
+}
+
+std::vector&lt;double&gt; cumulative_sum(std::vector&lt;double&gt; x){
+    std::vector&lt;double&gt; v(x.size());
+    std::partial_sum(x.begin(), x.end(), v.begin(), std::plus&lt;double&gt;());
+    return v;
+}
+
+std::vector&lt;double&gt; standard_normal(int n) {
+    // random device class instance, source of &#39;true&#39; randomness for initializing random seed
+    std::random_device rd;
+    // Mersenne twister PRNG, initialized with seed from previous random device instance
+    std::mt19937 gen(rd());
+
+    float sample;
+    std::vector&lt;double&gt; v(n);
+    for(int i = 0; i &lt; n; i++) {
+        // instance of class std::normal_distribution with specific mean and stddev
+        std::normal_distribution&lt;float&gt; d(0, 1);
+        // get random number with normal distribution using gen as random source
+        sample = d(gen);
+        // add to vector
+        v[i] = sample;
+    }
+    return v;
+}
+
+// Exported functions ----------------------------------------------------------
+
+// [[Rcpp::export]]
+std::vector&lt;double&gt; GBM_Cpp(
+    double tau,         // time to expiry
+    double r,           // risk free rate
+    double sigma,       // volatility
+    double S0,          // initial stock price
+    int N               // number of steps between 0 and T
+) {
+    
+    // length of each time step
+    double dt = tau / N;
+    
+    // Vector for GBM paths
+    std::vector&lt;double&gt; St(N+1);
+    St[0] = S0;
+    // fill(St.begin(), St.end(), S0);
+    
+    // vector of time points
+    std::vector&lt;double&gt; time = linspace(0.0, tau, N);
+    
+    // standard normal sample of N elements
+    std::vector&lt;double&gt; Z = standard_normal(N);
+    
+    // Brownian motion increments
+    std::vector&lt;double&gt; dW(Z.size());
+
+    for (int i = 0; i &lt; (int)Z.size(); i++) {
+        dW[i] = Z[i] * std::sqrt(dt);
+    }
+    
+    // Brownian motion at each time (N+1 elements)
+    std::vector&lt;double&gt; W{0};     
+    std::vector&lt;double&gt; cumsum_dW = cumulative_sum(dW);
+    W.insert(W.end(), cumsum_dW.begin(), cumsum_dW.end());
+    
+    for (int i = 1; i &lt; (int)St.size(); i++) {
+        St[i] = S0 * exp((r - sigma * sigma / 2) * time[i] + sigma * W[i]);
+    }
+    
+    St.pop_back();
+
+    return( St );
+}
+
+// END OF FILE.</code></pre>
+<pre class="r"><code>Rcpp::sourceCpp(file = &quot;GBM.cpp&quot;)</code></pre>
+</div>
+<div id="r-closed-form-simulation" class="section level1">
+<h1><code>R</code> Closed-Form Simulation:</h1>
+<pre class="r"><code>GBM_R &lt;- function(
+        # FUNCTION ARGUMENTS
+        S0,       # initial stock value
+        t,        # time to expiry
+        r,        # risk-free rate
+        v,        # volatility 
+        N = 1000  # number of steps
+        ) {
+    
+    dt = t / N                # length of each step
+    time = seq(0, t, dt)      # vector of time points
+    
+    Z   &lt;- rnorm(N)             # standard normal sample of N elements
+    dW  &lt;- Z * sqrt(dt)         # Brownian motion increments
+    W   &lt;- c(0, cumsum(dW))     # Brownian motion at each time (N+1 elements)
+    
+    St  &lt;- c(S0, numeric(N))    # vector of zeros, N+1 elements
+    St  &lt;-  S0 * exp((r - v^2 / 2) * time + v * W)
+    return( St )
+}</code></pre>
+</div>
+<div id="comparison" class="section level1">
+<h1>Comparison:</h1>
+<pre class="r"><code>R_sims_euler &lt;- replicate(
+    n = 20,
+    GBM_Euler(t = 1, r = 0.05, v = 0.3, S0 = 100, N = 1000)
+)
+
+R_sims_analytic &lt;- replicate(
+    n = 20,
+    GBM_R(t = 1, r = 0.05, v = 0.3, S0 = 100, N = 1000)
+)
+
+Cpp_sims &lt;- replicate(
+    n = 20,
+    GBM_Cpp(tau = 1, r = 0.05, sigma = 0.3, S0 = 100, N = 1000)
+)
+
+matplot(R_sims_euler, type = &quot;l&quot;, main=&quot;R Simulations (Euler-Maruyama)&quot;)</code></pre>
+<p><img src="GBM_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>matplot(R_sims_analytic, type = &quot;l&quot;, main=&quot;R Simulations (analytic)&quot;)</code></pre>
+<p><img src="GBM_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
+<pre class="r"><code>matplot(Cpp_sims, type = &quot;l&quot;, main=&quot;C++ Simulations&quot;)</code></pre>
+<p><img src="GBM_files/figure-html/unnamed-chunk-5-3.png" width="672" /></p>
+<pre class="r"><code>microbenchmark::microbenchmark(
+    GBM_R = GBM_R(t = 1, r = 0.05, v = 0.2, S0 = 100, N = 365),
+    GBM_Cpp = GBM_Cpp(tau = 1, r = 0.05, sigma = 0.2, S0 = 100, N = 365),
+    times = 10000
+)</code></pre>
+<pre><code>## Unit: microseconds
+##     expr    min     lq     mean  median      uq       max neval
+##    GBM_R 55.509 59.655 77.90283 62.8380 72.7610 12091.860 10000
+##  GBM_Cpp 42.362 45.107 53.20820 48.6855 53.8645   561.379 10000</code></pre>
+</div>
 
 Copyright &copy; 1995.
 

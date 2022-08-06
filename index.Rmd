@@ -26,33 +26,11 @@ ggplot(results, aes(x = xs, y = ys, color = alpha)) +
   geom_line() + 
   theme_bw() + 
   theme(legend.position = "none") +
-    theme(axis.text.x = element_blank(),   # remove x axis labels
-          axis.ticks.x = element_blank(),  # remove x axis ticks
-          axis.text.y = element_blank(),   # remove y axis labels
-          axis.ticks.y = element_blank())  # remove y axis ticks
+    theme(axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()) 
 ```
-
-
-
-# Weierstrass Function
-
-$$
-f(x) = \sum_{n=0}^{\infty} a^n \cdot \cos(b^n \pi x)
-$$
-
-Where $a \in (0,1)$, $b$ is a positive, odd integer, and $ab > 1+\frac{3}{2}\pi$. The minimum value of $b$ for which these constraints are satisfied is $b=7$.
-
-```{r, cache = T, echo = F, fig.align='center', message = F, warning = F}
-fx <- function(x, a = 0.75, b = 5, max = 100) {
-    sum( a^(1:max) * cos(b^(1:max) * pi * x) )
-}
-
-x <- seq(-1, 1, 0.005)
-y <- lapply(x, FUN = fx)
-
-plot(x, y, type = "l")
-```
-
-
-
 
