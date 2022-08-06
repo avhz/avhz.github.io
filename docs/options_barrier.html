@@ -256,12 +256,6 @@ $(document).ready(function () {
   <a href="options_european.html">European Options</a>
 </li>
 <li>
-  <a href="options_american.html">American Options</a>
-</li>
-<li>
-  <a href="options_asian.html">Asian Options</a>
-</li>
-<li>
   <a href="options_barrier.html">Barrier Options</a>
 </li>
       </ul>
@@ -755,8 +749,8 @@ std::vector&lt;double&gt; GBM_Cpp(
     time_steps = 10000L
 )</code></pre>
 <pre><code>##            Down.and.Out Down.and.In Up.and.Out Up.and.In
-## Call Price     6.132183      0.0000       S&gt;=H      S&gt;=H
-## Put Price      5.212136      6.5497       S&gt;=H      S&gt;=H</code></pre>
+## Call Price     6.673877    0.000000       S&gt;=H      S&gt;=H
+## Put Price      4.773531    6.011725       S&gt;=H      S&gt;=H</code></pre>
 <pre class="r"><code>BarrierOptionClosedForm(
     S = 100.0, # Underlying price
     X = 110.0, # Strike price
@@ -779,8 +773,8 @@ std::vector&lt;double&gt; GBM_Cpp(
     time_steps = 10000L
 )</code></pre>
 <pre><code>##            Down.and.Out Down.and.In Up.and.Out Up.and.In
-## Call Price         S&lt;=H        S&lt;=H  0.1904071 5.8131430
-## Put Price          S&lt;=H        S&lt;=H 10.7047588 0.8541083</code></pre>
+## Call Price         S&lt;=H        S&lt;=H  0.1353099 5.7857533
+## Put Price          S&lt;=H        S&lt;=H  9.7565860 0.8944462</code></pre>
 </div>
 
 Copyright &copy; 1995.

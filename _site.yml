@@ -10,12 +10,12 @@ navbar:
       href: GBM.html
     - text: "European Options"
       href: options_european.html
-    - text: "American Options"
-      href: options_american.html
-    - text: "Asian Options"
-      href: options_asian.html
     - text: "Barrier Options"
       href: options_barrier.html
+    # - text: "American Options"
+    #   href: options_american.html
+    # - text: "Asian Options"
+    #   href: options_asian.html
 output:
   html_document:
     theme: cosmo
