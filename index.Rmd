@@ -1,11 +1,9 @@
 ---
-title: "$f(\\alpha\\zeta)$"
+# title: "$f(\\alpha\\zeta)$"
+output:
+  html_document:
+    toc: false
 ---
-
-$$
-y = \sin(\alpha \zeta) \qquad \alpha \in \{0,0.1,0.2,...,3\}
-$$
-
 
 ```{r, cache = T, echo = F, fig.align='center', message = F, warning = F}
 library(tidyverse)
@@ -33,4 +31,3 @@ ggplot(results, aes(x = xs, y = ys, color = alpha)) +
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank()) 
 ```
-

@@ -311,13 +311,7 @@ BarrierOptionClosedForm <- function(
 
 # Monte-Carlo Pricing:
 
-An alternative is to use Monte-Carlo simulation to generate Geometric Brownian Motion (GBM) trajectories of a stock price and estimate the price of the barrier option based on these samples. To do so, we create a function to simulate the GBM trajectories:
-
-
-```{Rcpp, file = "GBM.cpp"}
-
-```
-
+An alternative is to use Monte-Carlo simulation to generate Geometric Brownian Motion (GBM) trajectories of a stock price and estimate the price of the barrier option based on these samples. For the Monte Carlo method we can use the Geometric Brownian Motion simulation `C++` file [here](GBM.html).
 
 ```{r}
 Rcpp::sourceCpp(file = "GBM.cpp")

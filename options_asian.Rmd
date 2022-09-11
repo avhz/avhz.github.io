@@ -1,6 +1,167 @@
 ---
 title: "Asian Options"
+editor_options: 
+  chunk_output_type: console
 ---
+
+Asian options are options that depend on the average price of the underlying over the life of the option. One can use either the geometric mean ($\bar{x}=\sqrt[n]{x_1 \cdots x_n}$), or the arithmetic mean ($\bar{x} = \frac{1}{n}(x_1+\cdots + x_n)$).
+
+Closed form solutions exist for geometric mean Asian options since the mean itself is also log-normally distributed, however for arithmetic mean Asian options, generally approximation formulas or Monte Carlo simulations are required. 
+
+# Types of Asian options
+
+## Average Price Option
+
++ Average Price Call Payoff
+    
+$$
+(A(0,T) - K)^+ \qquad \text{or} \qquad (G(0,T) - K)^+
+$$
+
++ Average Price Put Payoff
+
+$$
+(K - A(0,T))^+ \qquad \text{or} \qquad (K - G(0,T))^+
+$$
+
+
+## Average Strike Option
+
++ Average Strike Call Payoff
+    
+$$
+(S(0,T) - A(0,T))^+ \qquad \text{or} \qquad (S(0,T) - G(0,T))^+
+$$
+
++ Average Strike Put Payoff
+    
+$$
+(A(0,T) - S(0,T))^+ \qquad \text{or} \qquad (G(0,T) - S(0,T))^+
+$$
+
+
+Where the types of averaging are as follows (continuous vs. discrete):
+
+$$
+A(0,T) = \frac{1}{T}\int_0^T S(t)dt 
+\qquad \qquad
+A(0,T) = \frac{1}{n}\sum_{i=1}^n S(t_i)
+$$
+
+$$
+G(0,T) = \exp\left(\frac{1}{T}\int_0^T \ln[S(t)] dt \right)
+\qquad \qquad
+G(0,T) = \sqrt[n]{\prod{S(t_i)}} = \exp\left(\frac{1}{n}\sum_{i=1}^n\ln[S(t_i)]\right)
+$$
+
+
+
+# Geometric Average
+
+## Closed-form solution
+
+A geometric continuous average-rate option can be priced by making slight adjustments to the pricing formulas for standard options as follows (Kemna & Vorst, 1990):
+
+$$
+C = Se^{(b_A - r)T}N(d_1) - Xe^{-rT}N(d_2)
+$$
+
+$$
+P = - Se^{(b_A - r)T}N(-d_1) + Xe^{-rT}N(-d_2)
+$$
+
+Adjustments to $d_1$, $d_2$, volatility and cost-of-carry:
+
+$$
+\begin{aligned}
+d_1 &= \frac{\ln(S/X) + (b_A + \sigma_A^2/2)T}{\sigma_A\sqrt{T}} \\
+d_2 &= d_1 - \sigma_A\sqrt{T} \\
+\sigma_A &= \frac{\sigma}{\sqrt{3}} \\
+b_A &= \frac{1}{2}\left( b - \frac{\sigma^2}{6} \right)
+\end{aligned}
+$$
+
+
+```{r}
+AsianGeometricClosedForm <- function(S, X, r, t, v, q = 0.0) {
+    
+    b <- r - q
+    
+    vA <- v / sqrt(3)
+    bA <- 0.5 * (b - v^2/6)
+    
+    d1 <- (log(S/X) + (bA + vA^2/2) * t) / (vA * sqrt(t))
+    d2 <- d1 - vA * sqrt(t)
+    
+    prices <- list(
+        "Call price" = S*exp((bA-r)*t)*pnorm(d1) - X*exp(-r*t)*pnorm(d2),
+        "Put price" = -S*exp((bA-r)*t)*pnorm(-d1) + X*exp(-r*t)*pnorm(-d2)
+    )
+    
+    return( prices )
+}
+```
+
+## Monte Carlo simulation
+
+For the Monte Carlo method we can use the Geometric Brownian Motion simulation `C++` file [here](GBM.html).
+
+```{r}
+Rcpp::sourceCpp(file = "GBM.cpp")
+```
+
+```{r}
+AsianGeometricMonteCarlo <- function(
+        S, K, r, t, v, 
+        q = 0.0,
+        paths = 1000L,
+        time_steps = 1000L) {
+    
+    # browser()
+    
+    # print("Simulating Geometric Brownian Motion:")
+    # S <- plyr::raply(
+    #     .n = paths,
+    #     .expr = GBM_Cpp(tau = t, N = time_steps, r = r, sigma = v, S0 = S),
+    #     .progress = "text"
+    # )
+    # 
+    # print("Calculating geometric mean of GBM paths:")
+    # means <- plyr::aaply(
+    #     .data = S,
+    #     .margins = 1,
+    #     .fun = function(S) exp(mean(log(S))),
+    #     .progress = "text"
+    # )
+    
+    S <- replicate(
+        n = paths,
+        expr = GBM_Cpp(tau = t, N = time_steps, r = r, sigma = v, S0 = S)
+    )
+
+    means <- apply( S, 2, function(S) exp(mean(log(S))) )
+    
+    prices <- list(
+        "Call price" = mean( exp( -r*t) * pmax(means - K, 0) ) ,
+        "Put price" = mean( exp( -r*t) * pmax(K - means, 0) ) 
+    )
+    
+    return( prices )
+}
+```
+
+## Comparison of geometric mean methods
+
+```{r}
+AsianGeometricClosedForm(S = 100, X = 110, r = 0.05, t = 1, v = 0.2)
+AsianGeometricMonteCarlo(S = 100, K = 110, r = 0.05, t = 1, v = 0.2, time_steps = 10000L, paths = 1000L)
+```
+
+
+# Arithmetic Average 
+
+## Turnbull-Wakeman (1991) approximation
+
 
 
 

@@ -29,6 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -223,6 +226,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -230,6 +296,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -253,10 +329,10 @@ $(document).ready(function () {
   <a href="GBM.html">Geometric Brownian Motion Simulation</a>
 </li>
 <li>
-  <a href="options_european.html">European Options</a>
+  <a href="options_european.html">Option Pricing: European</a>
 </li>
 <li>
-  <a href="options_barrier.html">Barrier Options</a>
+  <a href="options_barrier.html">Option Pricing: Barrier</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -297,7 +373,7 @@ X_{t_{n+1}} = X_{t_n} + \mu(t,X_{t_n})\Delta t +
 \qquad
 \epsilon \sim N(0,\Delta t)
 \]</span></p>
-<pre class="r"><code>GBM_Euler &lt;- function(S0 = 1, r, v, t, N = 365) {
+<pre class="r"><code>GBM_Euler &lt;- function(S0, r, v, t, N = 365) {
     dt      &lt;- t / N
     time    &lt;- seq(from = 0, to = t, by = dt)
     
@@ -456,19 +532,23 @@ matplot(R_sims_euler, type = &quot;l&quot;, main=&quot;R Simulations (Euler-Maru
 <pre class="r"><code>matplot(Cpp_sims, type = &quot;l&quot;, main=&quot;C++ Simulations&quot;)</code></pre>
 <p><img src="GBM_files/figure-html/unnamed-chunk-5-3.png" width="672" /></p>
 <pre class="r"><code>microbenchmark::microbenchmark(
+    GBM_Euler = GBM_Euler(S0 = 100, r = 0.05, v = 0.2, t = 1, N = 365),
     GBM_R = GBM_R(t = 1, r = 0.05, v = 0.2, S0 = 100, N = 365),
     GBM_Cpp = GBM_Cpp(tau = 1, r = 0.05, sigma = 0.2, S0 = 100, N = 365),
     times = 10000
 )</code></pre>
 <pre><code>## Unit: microseconds
-##     expr    min      lq     mean median     uq      max neval
-##    GBM_R 55.860 62.9895 94.78781 71.409 87.849 46070.14 10000
-##  GBM_Cpp 42.459 47.8245 72.07888 52.508 65.314 66942.88 10000</code></pre>
+##       expr     min       lq      mean   median       uq      max neval
+##  GBM_Euler 129.779 133.9800 151.82110 137.7875 146.9010 12888.26 10000
+##      GBM_R  55.712  59.2385  75.01912  62.7070  71.5780 10325.23 10000
+##    GBM_Cpp  41.762  47.1210  55.18893  49.7385  53.3635  8427.16 10000</code></pre>
 </div>
 
-Copyright &copy; 1995.
+Copyright &copy; 2022.
 
 
+</div>
+</div>
 
 </div>
 
@@ -501,6 +581,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

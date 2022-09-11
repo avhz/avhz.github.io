@@ -29,6 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -223,6 +226,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -230,6 +296,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -253,10 +329,10 @@ $(document).ready(function () {
   <a href="GBM.html">Geometric Brownian Motion Simulation</a>
 </li>
 <li>
-  <a href="options_european.html">European Options</a>
+  <a href="options_european.html">Option Pricing: European</a>
 </li>
 <li>
-  <a href="options_barrier.html">Barrier Options</a>
+  <a href="options_barrier.html">Option Pricing: Barrier</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -571,100 +647,9 @@ P_{UO} = (B-D+F) \cdot \mathbf{1}_{X&gt;H} + (A-C+F)\cdot
 <h1>Monte-Carlo Pricing:</h1>
 <p>An alternative is to use Monte-Carlo simulation to generate Geometric
 Brownian Motion (GBM) trajectories of a stock price and estimate the
-price of the barrier option based on these samples. To do so, we create
-a function to simulate the GBM trajectories:</p>
-<pre class="cpp"><code>
-// Header files and namespaces -------------------------------------------------
-
-#include &lt;Rcpp.h&gt;
-#include &lt;math.h&gt;
-#include &lt;numeric&gt;
-#include &lt;random&gt;
-#include &lt;vector&gt;
-#include &lt;functional&gt; 
-
-using namespace Rcpp;
-
-// Non-exported functions ------------------------------------------------------
-
-std::vector&lt;double&gt; linspace(double a, double b, int num) {
-    std::vector&lt;double&gt; v(num);
-    for (int i = 0; i &lt; num; i++) { v[i] = a + i * ( (b - a) / num ); }
-    return v;
-}
-
-std::vector&lt;double&gt; cumulative_sum(std::vector&lt;double&gt; x){
-    std::vector&lt;double&gt; v(x.size());
-    std::partial_sum(x.begin(), x.end(), v.begin(), std::plus&lt;double&gt;());
-    return v;
-}
-
-std::vector&lt;double&gt; standard_normal(int n) {
-    // random device class instance, source of &#39;true&#39; randomness for initializing random seed
-    std::random_device rd;
-    // Mersenne twister PRNG, initialized with seed from previous random device instance
-    std::mt19937 gen(rd());
-
-    float sample;
-    std::vector&lt;double&gt; v(n);
-    for(int i = 0; i &lt; n; i++) {
-        // instance of class std::normal_distribution with specific mean and stddev
-        std::normal_distribution&lt;float&gt; d(0, 1);
-        // get random number with normal distribution using gen as random source
-        sample = d(gen);
-        // add to vector
-        v[i] = sample;
-    }
-    return v;
-}
-
-// Exported functions ----------------------------------------------------------
-
-// [[Rcpp::export]]
-std::vector&lt;double&gt; GBM_Cpp(
-    double tau,         // time to expiry
-    double r,           // risk free rate
-    double sigma,       // volatility
-    double S0,          // initial stock price
-    int N               // number of steps between 0 and T
-) {
-    
-    // length of each time step
-    double dt = tau / N;
-    
-    // Vector for GBM paths
-    std::vector&lt;double&gt; St(N+1);
-    St[0] = S0;
-    // fill(St.begin(), St.end(), S0);
-    
-    // vector of time points
-    std::vector&lt;double&gt; time = linspace(0.0, tau, N);
-    
-    // standard normal sample of N elements
-    std::vector&lt;double&gt; Z = standard_normal(N);
-    
-    // Brownian motion increments
-    std::vector&lt;double&gt; dW(Z.size());
-
-    for (int i = 0; i &lt; (int)Z.size(); i++) {
-        dW[i] = Z[i] * std::sqrt(dt);
-    }
-    
-    // Brownian motion at each time (N+1 elements)
-    std::vector&lt;double&gt; W{0};     
-    std::vector&lt;double&gt; cumsum_dW = cumulative_sum(dW);
-    W.insert(W.end(), cumsum_dW.begin(), cumsum_dW.end());
-    
-    for (int i = 1; i &lt; (int)St.size(); i++) {
-        St[i] = S0 * exp((r - sigma * sigma / 2) * time[i] + sigma * W[i]);
-    }
-    
-    St.pop_back();
-
-    return( St );
-}
-
-// END OF FILE.</code></pre>
+price of the barrier option based on these samples. For the Monte Carlo
+method we can use the Geometric Brownian Motion simulation
+<code>C++</code> file <a href="GBM.html">here</a>.</p>
 <pre class="r"><code>Rcpp::sourceCpp(file = &quot;GBM.cpp&quot;)</code></pre>
 <pre class="r"><code>BarrierOptionMonteCarlo &lt;- function(
         S, X, r, t, v, H, 
@@ -749,8 +734,8 @@ std::vector&lt;double&gt; GBM_Cpp(
     time_steps = 10000L
 )</code></pre>
 <pre><code>##            Down.and.Out Down.and.In Up.and.Out Up.and.In
-## Call Price     6.673877    0.000000       S&gt;=H      S&gt;=H
-## Put Price      4.773531    6.011725       S&gt;=H      S&gt;=H</code></pre>
+## Call Price     6.478961 0.003525146       S&gt;=H      S&gt;=H
+## Put Price      4.933071 6.371631828       S&gt;=H      S&gt;=H</code></pre>
 <pre class="r"><code>BarrierOptionClosedForm(
     S = 100.0, # Underlying price
     X = 110.0, # Strike price
@@ -773,13 +758,15 @@ std::vector&lt;double&gt; GBM_Cpp(
     time_steps = 10000L
 )</code></pre>
 <pre><code>##            Down.and.Out Down.and.In Up.and.Out Up.and.In
-## Call Price         S&lt;=H        S&lt;=H  0.1353099 5.7857533
-## Put Price          S&lt;=H        S&lt;=H  9.7565860 0.8944462</code></pre>
+## Call Price         S&lt;=H        S&lt;=H  0.1700808 6.8209765
+## Put Price          S&lt;=H        S&lt;=H 10.3676515 0.8312809</code></pre>
 </div>
 
-Copyright &copy; 1995.
+Copyright &copy; 2022.
 
 
+</div>
+</div>
 
 </div>
 
@@ -812,6 +799,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

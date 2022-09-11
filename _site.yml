@@ -8,14 +8,16 @@ navbar:
       href: index.html
     - text: "Geometric Brownian Motion Simulation"
       href: GBM.html
-    - text: "European Options"
+    - text: "Option Pricing: European"
       href: options_european.html
-    - text: "Barrier Options"
+    - text: "Option Pricing: Barrier"
       href: options_barrier.html
-    # - text: "American Options"
+    # - text: "Option Pricing: American"
     #   href: options_american.html
-    # - text: "Asian Options"
+    # - text: "Option Pricing: Asian"
     #   href: options_asian.html
+    # - text: "Algorithmic Adjoint Differentiation"
+    #   href: AAD.html
 output:
   html_document:
     theme: cosmo
@@ -23,6 +25,10 @@ output:
     include:
       after_body: footer.html
     css: styles.css
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 3
 ---
 
 # THEME OPTIONS: ---------------------------------------------------------------
