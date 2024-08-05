@@ -7,25 +7,13 @@
 
 /* Root styles */
 :root {
-    --foreground: #000;
-    --background: #eee;
+    --foreground: #fff;
+    --background: #000;
     color: var(--foreground);
     background-color: var(--background);
     height: 100%;
     width: 100%;
     padding: 1.5rem;
-}
-
-/* Dark mode styles */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --foreground: #fff;
-        --background: #000;
-    }
-
-    img:not(.no-invert) {
-        filter: invert(1);
-    }
 }
 
 /* Body styles */
@@ -76,7 +64,8 @@ a:hover .hover-underline::after {
 
 /* Header image styles */
 header img {
-    height: 2.5rem;
+    height: 4rem;
+    /* Increase logo height */
     vertical-align: text-bottom;
 }
 
@@ -101,8 +90,10 @@ main a {
 }
 
 main img {
-    max-height: 8rem;
-    max-width: min(8rem, 25vw);
+    max-height: 10rem;
+    /* Increase max icon height */
+    max-width: min(10rem, 30vw);
+    /* Increase max icon width */
 }
 
 /* Responsive styles */
@@ -118,7 +109,7 @@ main img {
 }
 
 
-/* * {
+/* General styles * {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
@@ -127,16 +118,14 @@ main img {
 :root {
     --foreground: #000;
     --background: #eee;
-
     color: var(--foreground);
     background-color: var(--background);
-
     height: 100%;
     width: 100%;
     padding: 1.5rem;
 }
 
-@media screen and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
     :root {
         --foreground: #fff;
         --background: #000;
@@ -153,7 +142,6 @@ body {
     font-size: 2rem;
     font-family: monospace;
     text-align: center;
-
     display: grid;
     grid-template: auto / repeat(3, 1fr);
     grid-auto-rows: 1fr;
@@ -208,7 +196,7 @@ header .right-box a:not(:first-of-type) {
 
 main a {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 1rem;
