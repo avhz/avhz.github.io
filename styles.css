@@ -7,17 +7,17 @@ General styles * {
 :root {
     --foreground: #000;
     --background: #eee;
+    /* #eee; */
     color: var(--foreground);
     background-color: var(--background);
     height: 100%;
     width: 100%;
-    padding: 2rem;
-    /* THIS ONE */
+    /* padding: 0rem; */
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --foreground: #fff;
+        --foreground: #f9a526;
         --background: #000;
     }
 
@@ -85,7 +85,6 @@ main img {
     }
 }
 
-
 body {
     height: 100%;
     width: 100%;
@@ -98,43 +97,3 @@ body {
     gap: 0rem;
     overflow: hidden;
 }
-
-
-/* html,
-body {
-    height: 100%;
-    width: 100%;
-    font-size: 2rem;
-    font-family: monospace;
-    text-align: center;
-    display: grid;
-    grid-template: auto / repeat(3, 1fr);
-    grid-auto-rows: 1fr;
-    gap: 0;
-    overflow: hidden;
-    padding: 0;
-} */
-
-/* html,
-body {
-    height: 100%;
-    width: 100%;
-    font-size: 2rem;
-    font-family: monospace;
-    text-align: center;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    grid-template-columns: 1fr;
-    gap: 0;
-} */
-
-/* header .right-box {
-    grid-row: 1;
-    grid-column: -2 / -1;
-    text-align: right;
-    font-size: 0;
-} */
-
-/* header .right-box a:not(:first-of-type) {
-    margin-left: 2rem;
-} */
